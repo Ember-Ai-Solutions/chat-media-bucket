@@ -97,10 +97,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         description: File uploaded successfully
  */
 app.post('/upload', authenticate, upload.single('file'), (req, res) => {
-  console.log('File uploaded');
   const file = req.file;
   const clientId = req.clientId;
   res.json({ filePath: `${BASE_URL}/files/${clientId}/${file.filename}` });
+  console.log('File uploaded');
 });
 
 /**
