@@ -10,7 +10,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL;
-const VOLUME_PATH = process.env.VOLUME_PATH || '/uploads';
+const VOLUME_PATH = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+
+console.log(`VOLUME_PATH: ${VOLUME_PATH}`);
 
 // Middleware de autenticação
 function authenticate(req, res, next) {
