@@ -14,7 +14,7 @@ const VOLUME_PATH = process.env.RAILWAY_VOLUME_MOUNT_PATH;
 
 console.log(`VOLUME_PATH: ${VOLUME_PATH}`);
 
-// Middleware de autenticação
+// Auth middleware
 function authenticate(req, res, next) {
   const token = req.headers['authorization'];
   if (token === `Bearer ${process.env.AUTH_TOKEN}`) {
@@ -24,7 +24,7 @@ function authenticate(req, res, next) {
   }
 }
 
-// Multer configurado com clientId vindo do header ou query param
+// Multer configured to use clientId from header or query param
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const clientId = req.headers['x-client-id'] || req.query.clientId;
@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Swagger com segurança
+// Swagger setup
 const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.0.0',
@@ -73,7 +73,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  * @swagger
  * /upload:
  *   post:
- *     summary: Upload de arquivo
+ *     summary: Upload file
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -94,7 +94,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *                 format: binary
  *     responses:
  *       200:
- *         description: Arquivo salvo com sucesso
+ *         description: File uploaded successfully
  */
 app.post('/upload', authenticate, upload.single('file'), (req, res) => {
   const file = req.file;
@@ -106,7 +106,7 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
  * @swagger
  * /delete:
  *   delete:
- *     summary: Deletar arquivo
+ *     summary: Delete file
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -122,7 +122,7 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
  *           type: string
  *     responses:
  *       200:
- *         description: Arquivo deletado
+ *         description: File deleted
  */
 app.delete('/delete', authenticate, (req, res) => {
   const { clientId, filename } = req.query;
@@ -130,9 +130,9 @@ app.delete('/delete', authenticate, (req, res) => {
 
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
-    res.json({ message: 'Arquivo deletado com sucesso' });
+    res.json({ message: 'File successfully deleted' });
   } else {
-    res.status(404).json({ error: 'Arquivo não encontrado' });
+    res.status(404).json({ error: 'File not found' });
   }
 });
 
@@ -140,7 +140,7 @@ app.delete('/delete', authenticate, (req, res) => {
  * @swagger
  * /files/{clientId}/{filename}:
  *   get:
- *     summary: Obter arquivo
+ *     summary: Get file
  *     parameters:
  *       - in: path
  *         name: clientId
@@ -154,11 +154,11 @@ app.delete('/delete', authenticate, (req, res) => {
  *           type: string
  *     responses:
  *       200:
- *         description: Arquivo retornado
+ *         description: File returned
  */
 app.use('/files', express.static(path.join(__dirname, VOLUME_PATH)));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Swagger at ${BASE_URL}/api-docs`);
+  console.log(`Swagger available at ${BASE_URL}/api-docs`);
 });
