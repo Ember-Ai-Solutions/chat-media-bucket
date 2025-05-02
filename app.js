@@ -7,21 +7,25 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 require('dotenv').config();
 
-const rootPath = __dirname; 
-const processPath = process.cwd();
+function logFolders() {
+  const rootPath = __dirname;
+  const processPath = process.cwd();
 
-const rootFolders = fs.readdirSync(rootPath).filter((item) => {
-  const fullPath = path.join(rootPath, item);
-  return fs.statSync(fullPath).isDirectory();
-});
+  const rootFolders = fs.readdirSync(rootPath).filter((item) => {
+    const fullPath = path.join(rootPath, item);
+    return fs.statSync(fullPath).isDirectory();
+  });
 
-const processFolders = fs.readdirSync(processPath).filter((item) => {
-  const fullPath = path.join(processPath, item);
-  return fs.statSync(fullPath).isDirectory();
-});
+  const processFolders = fs.readdirSync(processPath).filter((item) => {
+    const fullPath = path.join(processPath, item);
+    return fs.statSync(fullPath).isDirectory();
+  });
 
-console.log('Root folders:', rootFolders);
-console.log('Process folders:', processFolders);
+  console.log('Root folders:', rootFolders);
+  console.log('Process folders:', processFolders);
+}
+
+logFolders();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -113,9 +117,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         description: File uploaded successfully
  */
 app.post('/upload', authenticate, upload.single('file'), (req, res) => {
+  console.log('File uploaded');
   const file = req.file;
   const clientId = req.clientId;
   res.json({ filePath: `${BASE_URL}/files/${clientId}/${file.filename}` });
+  logFolders();
 });
 
 /**
