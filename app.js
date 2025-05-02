@@ -7,26 +7,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 require('dotenv').config();
 
-function logFolders() {
-  const rootPath = __dirname;
-  const processPath = process.cwd();
-
-  const rootFolders = fs.readdirSync(rootPath).filter((item) => {
-    const fullPath = path.join(rootPath, item);
-    return fs.statSync(fullPath).isDirectory();
-  });
-
-  const processFolders = fs.readdirSync(processPath).filter((item) => {
-    const fullPath = path.join(processPath, item);
-    return fs.statSync(fullPath).isDirectory();
-  });
-
-  console.log('Root folders:', rootFolders);
-  console.log('Process folders:', processFolders);
-}
-
-logFolders();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL;
@@ -53,7 +33,7 @@ const storage = multer.diskStorage({
       return cb(new Error('clientId is required (use x-client-id header or query param)'));
     }
 
-    const dir = path.join(__dirname, `./${VOLUME_PATH}`, clientId);
+    const dir = path.join(__dirname, VOLUME_PATH, clientId);
     fs.mkdirSync(dir, { recursive: true });
     req.clientId = clientId;
     cb(null, dir);
@@ -121,7 +101,6 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
   const file = req.file;
   const clientId = req.clientId;
   res.json({ filePath: `${BASE_URL}/files/${clientId}/${file.filename}` });
-  logFolders();
 });
 
 /**
@@ -148,7 +127,7 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
  */
 app.delete('/delete', authenticate, (req, res) => {
   const { clientId, filename } = req.query;
-  const filePath = path.join(__dirname, `./${VOLUME_PATH}`, clientId, filename);
+  const filePath = path.join(__dirname, VOLUME_PATH, clientId, filename);
 
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
@@ -178,7 +157,7 @@ app.delete('/delete', authenticate, (req, res) => {
  *       200:
  *         description: File returned
  */
-app.use('/files', express.static(path.join(__dirname, `./${VOLUME_PATH}`)));
+app.use('/files', express.static(path.join(__dirname, VOLUME_PATH)));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
