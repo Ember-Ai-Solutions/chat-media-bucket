@@ -7,6 +7,22 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 require('dotenv').config();
 
+const rootPath = __dirname; 
+const processPath = process.cwd();
+
+const rootFolders = fs.readdirSync(rootPath).filter((item) => {
+  const fullPath = path.join(rootPath, item);
+  return fs.statSync(fullPath).isDirectory();
+});
+
+const processFolders = fs.readdirSync(processPath).filter((item) => {
+  const fullPath = path.join(processPath, item);
+  return fs.statSync(fullPath).isDirectory();
+});
+
+console.log('Root folders:', rootFolders);
+console.log('Process folders:', processFolders);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL;
