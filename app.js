@@ -10,6 +10,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL;
+const VOLUME_PATH = process.env.VOLUME_PATH || '/uploads';
 
 // Middleware de autenticação
 function authenticate(req, res, next) {
@@ -30,7 +31,7 @@ const storage = multer.diskStorage({
       return cb(new Error('clientId is required (use x-client-id header or query param)'));
     }
 
-    const dir = path.join(__dirname, 'uploads', clientId);
+    const dir = path.join(__dirname, VOLUME_PATH, clientId);
     fs.mkdirSync(dir, { recursive: true });
     req.clientId = clientId;
     cb(null, dir);
@@ -123,7 +124,7 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
  */
 app.delete('/delete', authenticate, (req, res) => {
   const { clientId, filename } = req.query;
-  const filePath = path.join(__dirname, 'uploads', clientId, filename);
+  const filePath = path.join(__dirname, VOLUME_PATH, clientId, filename);
 
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
@@ -153,7 +154,7 @@ app.delete('/delete', authenticate, (req, res) => {
  *       200:
  *         description: Arquivo retornado
  */
-app.use('/files', express.static(path.join(__dirname, 'uploads')));
+app.use('/files', express.static(path.join(__dirname, VOLUME_PATH)));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
