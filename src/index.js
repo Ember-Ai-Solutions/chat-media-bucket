@@ -71,6 +71,7 @@ const swaggerSpec = swaggerJsdoc({
     info: {
       title: 'Upload API',
       version: '1.0.0',
+      description: 'API to upload and manage files'
     },
     components: {
       securitySchemes: {
@@ -82,7 +83,7 @@ const swaggerSpec = swaggerJsdoc({
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ['./app.js'],
+  apis: ['./src/index.js'],
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -92,6 +93,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  * /upload:
  *   post:
  *     summary: Upload file
+ *     tags:
+ *       - Files
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -126,6 +129,8 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
  * /delete:
  *   delete:
  *     summary: Delete file
+ *     tags:
+ *       - Files
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -162,6 +167,8 @@ app.delete('/delete', authenticate, (req, res) => {
  * /files/{clientId}/{filename}:
  *   get:
  *     summary: Get file
+ *     tags:
+ *       - Files
  *     parameters:
  *       - in: path
  *         name: clientId
