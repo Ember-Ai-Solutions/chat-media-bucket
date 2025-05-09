@@ -5,31 +5,49 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-require('dotenv').config();
+const logger = require('./config/logger');
+const environment = require('./config/environment');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL;
-const VOLUME_PATH = process.env.VOLUME_PATH;
+const PORT = environment.port;
+const BASE_URL = environment.baseUrl;
+const VOLUME_PATH = environment.volumePath;
 
-console.log(`VOLUME_PATH: ${VOLUME_PATH}`);
+logger.info('Starting application', { volumePath: VOLUME_PATH });
 
-// Auth middleware
+fs.readdir(path.join(__dirname, '..'), { withFileTypes: true }, (err, entries) => {
+  if (err) {
+    logger.error('Error reading project root directory', { error: err.message });
+    return;
+  }
+
+  const directories = entries
+    .filter(entry => entry.isDirectory())
+    .map(dir => dir.name);
+
+  logger.info('Project root directory structure', {
+    basePath: path.join(__dirname, '..'),
+    directories: directories
+  });
+});
+
+
 function authenticate(req, res, next) {
   const token = req.headers['authorization'];
-  if (token === `Bearer ${process.env.AUTH_TOKEN}`) {
+  if (token === `Bearer ${environment.authToken}`) {
     next();
   } else {
+    logger.warn('Unauthorized access attempt', { ip: req.ip });
     res.status(401).json({ error: 'Unauthorized' });
   }
 }
 
-// Multer configured to use clientId from header or query param
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const clientId = req.headers['x-client-id'] || req.query.clientId;
 
     if (!clientId) {
+      logger.error('Missing clientId in request');
       return cb(new Error('clientId is required (use x-client-id header or query param)'));
     }
 
@@ -99,8 +117,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.post('/upload', authenticate, upload.single('file'), (req, res) => {
   const file = req.file;
   const clientId = req.clientId;
+  logger.info('File uploaded successfully', { clientId, filename: file.filename });
   res.json({ filePath: `${BASE_URL}/files/${clientId}/${file.filename}` });
-  console.log('File uploaded');
 });
 
 /**
@@ -131,8 +149,10 @@ app.delete('/delete', authenticate, (req, res) => {
 
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
+    logger.info('File deleted successfully', { clientId, filename });
     res.json({ message: 'File successfully deleted' });
   } else {
+    logger.warn('File not found for deletion', { clientId, filename });
     res.status(404).json({ error: 'File not found' });
   }
 });
@@ -160,6 +180,5 @@ app.delete('/delete', authenticate, (req, res) => {
 app.use('/files', express.static(path.join(__dirname, VOLUME_PATH)));
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Swagger available at ${BASE_URL}/api-docs`);
+  logger.info('Server started', { port: PORT, swaggerUrl: `${BASE_URL}/api-docs` });
 });
