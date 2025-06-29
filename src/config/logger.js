@@ -23,7 +23,7 @@ const consoleFormat = winston.format.combine(
 const logger = winston.createLogger({
   level: 'info',
   format: logFormat,
-  defaultMeta: { service: 'message-processor' },
+  defaultMeta: { service: 'bucket-api' },
   transports: [
     new winston.transports.File({
       filename: path.join('logs', 'error.log'),

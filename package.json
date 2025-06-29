@@ -1,9 +1,9 @@
 {
   "name": "bucket-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/app.js"
   },
   "keywords": [],
   "author": "",
